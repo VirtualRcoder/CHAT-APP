@@ -13,7 +13,8 @@ import NoChatSVG from "../../assets/Illustration/NoChat";
 const GeneralApp = () => {
   const theme = useTheme();
   const { sidebar, room_id, chat_type } = useSelector((store) => store.app);
-
+  // console.log(room_id, chat_type, sidebar);
+  console.log(room_id);
   return (
     <Stack direction="row" sx={{ width: "100%" }}>
       <Chats />

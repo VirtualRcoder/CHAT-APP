@@ -29,7 +29,7 @@ import { socket } from "../../socket";
 import { useDispatch, useSelector } from "react-redux";
 import { FetchDirectConversations } from "../../redux/slices/conversation";
 
-// const user_id = window.localStorage.getItem("user_id");
+const user_id = window.localStorage.user_id;
 
 const Chats = () => {
   const theme = useTheme();
@@ -41,14 +41,18 @@ const Chats = () => {
     (state) => state.conversation.direct_chat
   );
 
-  // useEffect(() => {
-  //   socket.emit("get_direct_conversations", { user_id }, (data) => {
-  //     console.log(data); // this data is the list of conversations
-  //     // dispatch action
+  console.log(conversations);
 
-  //     dispatch(FetchDirectConversations({ conversations: data }));
-  //   });
-  // }, []);
+  useEffect(() => {
+    socket.emit("get_direct_conversations", { user_id }, (data) => {
+      // console.log(data); // this data is the list of conversations
+      // dispatch action
+
+      dispatch(FetchDirectConversations({ conversations: data }));
+    });
+  }, []);
+
+  console.log(conversations);
 
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -124,15 +128,14 @@ const Chats = () => {
               <Stack spacing={2.4}>
                 {/* <Typography variant="subtitle2" sx={{ color: "#676667" }}>
                   Pinned
-                </Typography> */}
-                {/* Chat List */}
-                {/* {ChatList.filter((el) => el.pinned).map((el, idx) => {
+                </Typography>
+                Chat List
+                {ChatList.filter((el) => el.pinned).map((el, idx) => {
                   return <ChatElement {...el} />;
                 })} */}
                 <Typography variant="subtitle2" sx={{ color: "#676667" }}>
                   All Chats
                 </Typography>
-                {/* Chat List */}
                 {conversations
                   .filter((el) => !el.pinned)
                   .map((el, idx) => {

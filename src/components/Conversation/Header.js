@@ -12,12 +12,39 @@ import { faker } from "@faker-js/faker";
 import { CaretDown, MagnifyingGlass, Phone, VideoCamera } from "phosphor-react";
 import { useTheme } from "@emotion/react";
 import StyledBadge from "../StyleBadge";
-import { useDispatch } from "react-redux";
+import { socket } from "../../socket";
+import { useDispatch, useSelector } from "react-redux";
+import { FetchDirectConversations } from "../../redux/slices/conversation";
+
 import { ToggleSidebar } from "../../redux/slices/app";
+import { useEffect } from "react";
 
 function Header() {
   const theme = useTheme();
   const dispatch = useDispatch();
+
+  const { conversations } = useSelector(
+    (state) => state.conversation.direct_chat
+  );
+
+  const user_id = window.localStorage.user_id;
+
+  const { room_id } = useSelector((store) => store.app);
+
+  const conversation = conversations.find((el) => el?.id === room_id);
+
+  useEffect(() => {
+    socket.emit("get_direct_conversations", { user_id }, (data) => {
+      // console.log(data); // this data is the list of conversations
+      // dispatch action
+
+      dispatch(FetchDirectConversations({ conversations: data }));
+    });
+  }, []);
+
+  console.log(user_id);
+  console.log(conversations);
+
   return (
     <Box
       p={2}
@@ -52,12 +79,12 @@ function Header() {
               }}
               variant="dot"
             >
-              <Avatar alt={faker.name.fullName()} src={faker.image.avatar()} />
+              <Avatar alt={conversation.name} src={conversation.img} />
             </StyledBadge>
           </Box>
           <Stack spacing={0.2}>
-            <Typography variant="subtitle2">{faker.name.fullName()}</Typography>
-            <Typography variant="caption">Online</Typography>
+            <Typography variant="subtitle2">{conversation.name}</Typography>
+            <Typography variant="caption">{conversation.online}</Typography>
           </Stack>
         </Stack>
         <Stack direction={"row"} alignItems={"center"} spacing={3}>

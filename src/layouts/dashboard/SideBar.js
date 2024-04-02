@@ -24,6 +24,9 @@ import useSettings from "../../hooks/useSettings";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
+// import { LogOutUser } from "../../redux/slices/auth";
+// import { socket } from "../../socket";
+
 const getPath = (index) => {
   switch (index) {
     case 0:
@@ -59,6 +62,8 @@ export default function SideBar() {
   const [selected, setSelected] = useState(0);
 
   const { onToggleMode } = useSettings();
+
+  const user_id = window.localStorage.user_id;
 
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -217,6 +222,14 @@ export default function SideBar() {
                     <Stack
                       onClick={() => {
                         handleMenu(idx);
+                        // if (idx === 0) {
+                        //   navigate("/profile");
+                        // } else if (idx === 1) {
+                        //   navigate("/settings");
+                        // } else {
+                        //   dispatch(LogOutUser());
+                        //   socket.emit("end", { user_id });
+                        // }
                       }}
                       sx={{ width: 100 }}
                       direction={"row"}

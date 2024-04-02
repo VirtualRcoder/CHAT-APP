@@ -20,6 +20,8 @@ import { SelectConversation } from "../redux/slices/app";
 const ChatElement = ({ id, name, img, msg, time, unread, online }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
+  // console.log("CHAT ELEMENT");
+  // console.log(id);
   return (
     <Box
       onClick={() => {

@@ -152,7 +152,7 @@ const FriendRequestElement = ({
           <Button
             onClick={() => {
               //  emit "accept_request" event
-              // socket.emit("accept_request", { request_id: id });
+              socket.emit("accept_request", { request_id: id });
             }}
           >
             Accept Request
@@ -214,8 +214,8 @@ const FriendElement = ({
         <Stack direction={"row"} spacing={2} alignItems={"center"}>
           <IconButton
             onClick={() => {
-              // // start a new conversation
-              // socket.emit("start_conversation", { to: _id, from: user_id });
+              // start a new conversation
+              socket.emit("start_conversation", { to: _id, from: user_id });
             }}
           >
             <Chat />

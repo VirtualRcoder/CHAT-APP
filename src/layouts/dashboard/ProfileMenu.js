@@ -70,7 +70,7 @@ const ProfileMenu = () => {
                       navigate("/settings");
                     } else {
                       dispatch(LogOutUser());
-                      //   socket.emit("end", { user_id });
+                      socket.emit("end", { user_id });
                     }
                   }}
                   sx={{ width: 100 }}

@@ -18,12 +18,15 @@ import {
   User,
 } from "phosphor-react";
 import { useTheme, styled } from "@mui/material/styles";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import useResponsive from "../../hooks/useResponsive";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { useDispatch, useSelector } from "react-redux";
+import { socket } from "../../socket";
+import { FetchDirectConversations } from "../../redux/slices/conversation";
 
 const StyledInput = styled(TextField)(({ theme }) => ({
   "& .MuiInputBase-input": {
@@ -65,11 +68,22 @@ const Actions = [
   },
 ];
 
-const ChatInput = ({ openPicker, setOpenPicker }) => {
-  const [openActions, setOpenActions] = React.useState(false);
+const ChatInput = ({
+  openPicker,
+  setOpenPicker,
+  setValue,
+  value,
+  inputRef,
+}) => {
+  const [openActions, setOpenActions] = useState(false);
 
   return (
     <StyledInput
+      inputRef={inputRef}
+      value={value}
+      onChange={(event) => {
+        setValue(event.target.value);
+      }}
       fullWidth
       placeholder="Write a message..."
       variant="filled"
@@ -131,14 +145,62 @@ const ChatInput = ({ openPicker, setOpenPicker }) => {
   );
 };
 
+function containsUrl(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return urlRegex.test(text);
+}
+
+function linkify(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return text.replace(
+    urlRegex,
+    (url) => `<a href="${url}" target="_blank">${url}</a>`
+  );
+}
+
 const Footer = () => {
   const theme = useTheme();
+
+  const dispatch = useDispatch();
 
   const isMobile = useResponsive("between", "md", "xs", "sm");
 
   const [searchParams] = useSearchParams();
 
-  const [openPicker, setOpenPicker] = React.useState(false);
+  const [openPicker, setOpenPicker] = useState(false);
+
+  const user_id = window.localStorage.user_id;
+
+  const { sideBar, room_id } = useSelector((state) => state.app);
+
+  const [value, setValue] = useState("");
+
+  const inputRef = useRef(null);
+
+  const { conversations } = useSelector(
+    (state) => state.conversation.direct_chat
+  );
+
+  const conversation = conversations.filter((el) => el.id == room_id);
+
+  function handleEmojiClick(emoji) {
+    const input = inputRef.current;
+
+    if (input) {
+      const selectionStart = input.selectionStart;
+      const selectionEnd = input.selectionEnd;
+
+      setValue(
+        value.substring(0, selectionStart) +
+          emoji +
+          value.substring(selectionEnd)
+      );
+
+      // Move the cursor to the end of the inserted emoji
+      input.selectionStart = input.selectionEnd = selectionStart + 1;
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -170,16 +232,25 @@ const Footer = () => {
                   : searchParams.get("open") === "true"
                   ? 420
                   : 100,
+                // right: isMobile ? 20 : sideBar.open ? 420 : 100,
               }}
             >
               <Picker
                 theme={theme.palette.mode}
                 data={data}
-                onEmojiSelect={console.log}
+                onEmojiSelect={(emoji) => {
+                  handleEmojiClick(emoji.native);
+                }}
               />
             </Box>
             {/* Chat Input */}
-            <ChatInput openPicker={openPicker} setOpenPicker={setOpenPicker} />
+            <ChatInput
+              inputRef={inputRef}
+              value={value}
+              setValue={setValue}
+              openPicker={openPicker}
+              setOpenPicker={setOpenPicker}
+            />
           </Stack>
           <Box
             sx={{
@@ -194,7 +265,30 @@ const Footer = () => {
               alignItems={"center"}
               justifyContent="center"
             >
-              <IconButton>
+              <IconButton
+                onClick={() => {
+                  setValue("");
+                  socket.emit("text_message", {
+                    message: linkify(value),
+                    conversation_id: room_id,
+                    from: user_id,
+                    to: conversation[0].user_id,
+                    type: containsUrl(value) ? "Link" : "Text",
+                  });
+                  socket.emit(
+                    "get_direct_conversations",
+                    { user_id },
+                    (data) => {
+                      console.log(data); // this data is the list of conversations
+                      // dispatch action
+
+                      dispatch(
+                        FetchDirectConversations({ conversations: data })
+                      );
+                    }
+                  );
+                }}
+              >
                 <PaperPlaneTilt color="#ffffff" />
               </IconButton>
             </Stack>
