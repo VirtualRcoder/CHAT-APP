@@ -60,4 +60,5 @@ export const defaultLang = allLangs[0]; // English
 
 // DEFAULT ROOT PATH
 export const DEFAULT_PATH = PATH_DASHBOARD.general.app; // as '/app'
-export const BASE_URL = "http://localhost:3001";
+// export const BASE_URL = "http://localhost:3001";
+export const BASE_URL = "https://chat-server-6eo8.onrender.com/";
